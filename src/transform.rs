@@ -7,7 +7,7 @@ fn calculate_kth_nth(x_n: &i16, n: usize, n_samples: usize, k: usize) -> Complex
     let n_samples = n_samples as f64;
     let k = k as f64;
     let inner = 2.0 * PI * k * n / n_samples;
-    Complex::new(x_n * inner.cos(), x_n * inner.sin())
+    Complex::new(x_n * inner.cos(), -x_n * inner.sin())
 }
 
 fn calculate_kth(k: usize, samples: &Vec<i16>) -> Complex<f64> {
@@ -68,6 +68,10 @@ mod fft_test {
             Complex::new(0.088, 0.088),
         ];
         let mut result = finite_fourier_transform(zeros);
+        for x in &mut result {
+            x.re = (x.re * 1000.0).round() / 1000.0;
+            x.im = (x.im * 1000.0).round() / 1000.0;
+        }
         assert_eq!(expected, result);
     }
 }
