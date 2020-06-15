@@ -129,7 +129,7 @@ mod there_and_back_again {
 
 #[cfg(test)]
 mod ft_test {
-    use super::fourier_transform;
+    use super::{fourier_transform, round_complex};
     use num_complex::Complex;
 
     #[test]
@@ -164,7 +164,7 @@ mod ft_test {
         ];
         let mut result = fourier_transform(input);
         for x in &mut result {
-            round_complex(x, 10)
+            round_complex(x, 3)
         }
         assert_eq!(expected, result);
     }
@@ -172,7 +172,7 @@ mod ft_test {
 
 #[cfg(test)]
 mod ift_test {
-    use super::{inverse_fourier_transform, INPULSE_AT_ONE, INPULSE_AT_ORIGIN};
+    use super::{inverse_fourier_transform, round_complex, INPULSE_AT_ONE, INPULSE_AT_ORIGIN};
     use num_complex::Complex;
 
     #[test]
@@ -207,7 +207,7 @@ mod ift_test {
         ];
         let mut result = inverse_fourier_transform(input);
         for x in &mut result {
-            round_complex(x, 10)
+            round_complex(x, 3)
         }
         assert_eq!(expected, result);
     }
