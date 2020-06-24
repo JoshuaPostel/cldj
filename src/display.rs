@@ -7,7 +7,7 @@ use tui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     symbols,
-    widgets::{Axis, Block, Borders, Chart, Dataset},
+    widgets::{Axis, Block, Borders, Chart, Dataset, BarChart},
     Terminal,
 };
 
@@ -20,6 +20,8 @@ use std::thread;
 use std::time::Duration;
 
 use termion::input::TermRead;
+
+use super::transform::fourier_transform;
 
 
 
@@ -110,44 +112,66 @@ impl Events {
 
 struct App {
     signal: Vec<(f64, f64)>,
-    data: Vec<(f64, f64)>,
+    signal_buf: Vec<(f64, f64)>,
     window: [f64; 2],
+    frequency: Vec<(String, u64)>,
+    max: f64,
+    min: f64,
 }
 
 impl fmt::Display for App {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let signal_head = &self.signal[..2];
         let signal_tail = &self.signal[(self.signal.len()-2)..];
-        let data_head = &self.data[..2];
-        let data_tail = &self.data[(self.data.len()-2)..];
+        let signal_buf_head = &self.signal_buf[..2];
+        let signal_buf_tail = &self.signal_buf[(self.signal_buf.len()-2)..];
         write!(
             f,
             "App:\n  signal_head: {:?} ... {:?},\n  data_head: {:?} ... {:?},\n  window: {:?}",
-            signal_head, signal_tail, data_head, data_tail, self.window
+            signal_head, signal_tail, signal_buf_head, signal_buf_tail, self.window
         )
     }
 }
 
 impl App {
     fn new(data: Vec<i16>) -> App {
+        let max = *data.iter().max().expect("could not get max") as f64;
+        let min = *data.iter().min().expect("could not get min") as f64;
         let mut signal: Vec<(f64, f64)> = data
             .iter()
             .enumerate()
             .map(|(i, x)| (i as f64, *x as f64))
             .collect();
-        let data = signal.drain(..200).collect::<Vec<(f64, f64)>>();
+        let signal_buf = signal.drain(..200).collect::<Vec<(f64, f64)>>();
+        println!("calculating fourier transform");
+        let freq = fourier_transform(data);
+        let f2: Vec<(String, u64)> = freq
+            .iter()
+            .enumerate()
+            .map(|(i, f)| (i.to_string(), f.norm() as u64))
+            .collect();
+
+        let frequency: Vec<(String, u64)> = freq
+            .iter()
+            .enumerate()
+            .map(|(i, f)| (i.to_string(), f.norm() as u64))
+            .collect();
+
         App {
             signal,
-            data,
-            window: [0.0, 20.0],
+            signal_buf,
+            window: [0.0, 100.0],
+            frequency: frequency,
+            max,
+            min,
         }
     }
 
     fn update(&mut self) {
         for _ in 0..5 {
-            self.data.remove(0);
+            self.signal_buf.remove(0);
         }
-        self.data.extend(self.signal.drain(..5));
+        self.signal_buf.extend(self.signal.drain(..5));
         self.window[0] += 5.0;
         self.window[1] += 5.0;
     }
@@ -167,22 +191,36 @@ pub fn run(signal: Vec<i16>) -> Result<(), Box<dyn Error>> {
 
     loop {
         terminal.draw(|mut f| {
+
+            //TODO open an issue on rust-tui about unerganomic type
+            let frequency_retyped: Vec<(&str, u64)> = app
+                .frequency
+                .iter()
+                .map(|(x, y)| (x.as_str(), *y))
+                .collect();
+
             let size = f.size();
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
-                .constraints([Constraint::Ratio(1, 3),].as_ref(),)
+                //.constraints([Constraint::Ratio(1, 2),].as_ref(),)
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref(),)
                 .split(size);
             let x_labels = [
                 format!("{}", app.window[0]),
                 format!("{}", (app.window[0] + app.window[1]) / 2.0),
                 format!("{}", app.window[1]),
             ];
+            let y_labels = [
+                format!("{}", app.min),
+                format!("{}", (app.min + app.max) / 2.0),
+                format!("{}", app.max),
+            ];
             let datasets = [
                 Dataset::default()
                     .name("wav")
                     .marker(symbols::Marker::Dot)
                     .style(Style::default().fg(Color::Cyan))
-                    .data(&app.data[..]),
+                    .data(&app.signal_buf[..]),
             ];
             let chart = Chart::default()
                 .block(
@@ -204,12 +242,19 @@ pub fn run(signal: Vec<i16>) -> Result<(), Box<dyn Error>> {
                         .title("Y Axis")
                         .style(Style::default().fg(Color::Gray))
                         .labels_style(Style::default().modifier(Modifier::ITALIC))
-                        .bounds([-30_000.0, 30_000.0])
-                        .labels(&["-30_000", "0", "30_000"]),
+                        .bounds([app.min, app.max])
+                        .labels(&y_labels),
                 )
                 .datasets(&datasets);
             f.render_widget(chart, chunks[0]);
 
+            let barchart = BarChart::default()
+                .block(Block::default().title("Data1").borders(Borders::ALL))
+                .data(&frequency_retyped)
+                .bar_width(2)
+                .style(Style::default().fg(Color::Yellow))
+                .value_style(Style::default().fg(Color::Black).bg(Color::Yellow));
+            f.render_widget(barchart, chunks[1]);
         })?;
 
         match events.next()? {

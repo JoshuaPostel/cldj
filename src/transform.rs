@@ -1,19 +1,21 @@
-use num_complex::Complex;
+use num::{Complex, Integer, Float};
+use num::cast::ToPrimitive;
 use std::f64::consts::PI;
+use std::convert::TryFrom;
 
 #[allow(non_upper_case_globals)]
 const i: Complex<f64> = Complex::new(0.0, 1.0);
 
-fn calculate_kth_nth(x_n: &i16, n: usize, n_samples: usize, k: usize) -> Complex<f64> {
-    let x_n = *x_n as f64;
-    let n = n as f64;
-    let n_samples = n_samples as f64;
-    let k = k as f64;
+fn calculate_kth_nth<I: Integer + ToPrimitive>(x_n: &I, n: usize, n_samples: usize, k: usize) -> Complex<f64> {
+    let x_n = x_n.to_f64().unwrap();
+    let n = n.to_f64().unwrap();
+    let n_samples = n_samples.to_f64().unwrap();
+    let k = k.to_f64().unwrap();
     let inner = 2.0 * PI * k * n / n_samples;
     x_n * (inner.cos() - i * inner.sin())
 }
 
-fn calculate_kth(k: usize, samples: &Vec<i16>) -> Complex<f64> {
+fn calculate_kth<I: Integer + ToPrimitive>(k: usize, samples: &Vec<I>) -> Complex<f64> {
     let mut x_k = Complex::new(0.0, 0.0);
     let n_samples = samples.len();
     for (n, x_n) in samples.iter().enumerate() {
@@ -23,7 +25,7 @@ fn calculate_kth(k: usize, samples: &Vec<i16>) -> Complex<f64> {
     x_k
 }
 
-pub fn fourier_transform(samples: Vec<i16>) -> Vec<Complex<f64>> {
+pub fn fourier_transform<I: Integer + ToPrimitive>(samples: Vec<I>) -> Vec<Complex<f64>> {
     let mut transformed_samples: Vec<Complex<f64>> = Vec::new();
     let n_samples = samples.len();
     for k in 0..n_samples {
@@ -130,7 +132,7 @@ mod there_and_back_again {
 #[cfg(test)]
 mod ft_test {
     use super::{fourier_transform, round_complex};
-    use num_complex::Complex;
+    use num::Complex;
 
     #[test]
     fn impulse_at_origin() {
@@ -168,12 +170,41 @@ mod ft_test {
         }
         assert_eq!(expected, result);
     }
+
+    #[test]
+    fn impulse_at_one_i64() {
+        let input: Vec<i64> = vec![0, 1, 0, 0, 0, 0, 0, 0];
+        let expected: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 0.0),
+            Complex::new(0.707, -0.707),
+            Complex::new(0.0, -1.0),
+            Complex::new(-0.707, -0.707),
+            Complex::new(-1.0, 0.0),
+            Complex::new(-0.707, 0.707),
+            Complex::new(0.0, 1.0),
+            Complex::new(0.707, 0.707),
+        ];
+        let mut result = fourier_transform(input);
+        for x in &mut result {
+            round_complex(x, 3)
+        }
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn i64_and_i16_equal() {
+        let input_i64: Vec<i64> = vec![0, 1, 0, 0, 0, 0, 0, 0];
+        let input_i16: Vec<i16> = vec![0, 1, 0, 0, 0, 0, 0, 0];
+        let mut result_i64 = fourier_transform(input_i64);
+        let mut result_i16 = fourier_transform(input_i16);
+        assert_eq!(result_i64, result_i16);
+    }
 }
 
 #[cfg(test)]
 mod ift_test {
     use super::{inverse_fourier_transform, round_complex, INPULSE_AT_ONE, INPULSE_AT_ORIGIN};
-    use num_complex::Complex;
+    use num::Complex;
 
     #[test]
     fn impulse_at_origin() {

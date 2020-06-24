@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 tui = "0.9.5"
 termion = "1.5.5"
-num-complex = "0.2.4"
+num = "0.3"
 
 
 [dev-dependencies]
