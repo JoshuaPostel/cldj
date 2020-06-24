@@ -4,11 +4,11 @@
 
 - [ ] fourier transform
   - [x] add complex numbers
-  - [ ] add to display 
+  - [x] add to display 
   - [ ] performance
     - [ ] bench on larger data
     - [ ] bench inverse  
-  - [ ] implement with num-generics
+  - [x] implement with num-generics
 
 - [ ] input
   - [ ] robustness

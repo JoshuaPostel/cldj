@@ -4,9 +4,9 @@ use std::str;
 
 #[derive(Debug)]
 pub struct RIFFHeader {
-    riff: String,
-    file_size: u32,
-    four_cc: String,
+    pub riff: String,
+    pub file_size: u32,
+    pub four_cc: String,
 }
 
 impl RIFFHeader {
@@ -32,14 +32,14 @@ impl RIFFHeader {
 
 #[derive(Debug)]
 pub struct FMTHeader {
-    fmt: String,
-    header_size: u32,
-    format: u16,
-    nchannels: u16,
-    sample_rate: u32,
-    byte_rate: u32,
-    block_align: u16,
-    bits_per_sample: u16,
+    pub fmt: String,
+    pub header_size: u32,
+    pub format: u16,
+    pub nchannels: u16,
+    pub sample_rate: u32,
+    pub byte_rate: u32,
+    pub block_align: u16,
+    pub bits_per_sample: u16,
 }
 
 impl FMTHeader {
@@ -72,8 +72,8 @@ impl FMTHeader {
 
 #[derive(Debug)]
 pub struct DataHeader {
-    data: String,
-    size: u32,
+    pub data: String,
+    pub size: u32,
 }
 
 impl DataHeader {
