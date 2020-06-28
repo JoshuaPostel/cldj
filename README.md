@@ -16,5 +16,9 @@
   - [ ] add more filetypes
     - [ ] midi files
     - [ ] generalize commonalities
+  - [ ] should derive integer type from header
+
+- [ ] output
+  - [ ] update and adjust headers as the signal is manipulated
 
 - [ ] generate signals from period, amplitude, phase shift
