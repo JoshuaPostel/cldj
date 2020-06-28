@@ -143,9 +143,8 @@ impl App {
             .map(|(i, x)| (i as f64, *x as f64))
             .collect();
         let signal_buf = signal.drain(..200).collect::<Vec<(f64, f64)>>();
-        println!("calculating fourier transform");
         let freq = fourier_transform(data);
-        let f2: Vec<(String, u64)> = freq
+        let _f2: Vec<(String, u64)> = freq
             .iter()
             .enumerate()
             .map(|(i, f)| (i.to_string(), f.norm() as u64))

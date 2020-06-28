@@ -1,12 +1,17 @@
-use num::{Complex, Integer, Float};
 use num::cast::ToPrimitive;
+use num::{Complex, Integer};
+
 use std::f64::consts::PI;
-use std::convert::TryFrom;
 
 #[allow(non_upper_case_globals)]
 const i: Complex<f64> = Complex::new(0.0, 1.0);
 
-fn calculate_kth_nth<I: Integer + ToPrimitive>(x_n: &I, n: usize, n_samples: usize, k: usize) -> Complex<f64> {
+fn calculate_kth_nth<I: Integer + ToPrimitive>(
+    x_n: &I,
+    n: usize,
+    n_samples: usize,
+    k: usize,
+) -> Complex<f64> {
     let x_n = x_n.to_f64().unwrap();
     let n = n.to_f64().unwrap();
     let n_samples = n_samples.to_f64().unwrap();
@@ -102,7 +107,10 @@ fn round_complex(complex: &mut Complex<f64>, sig_figs: usize) {
 
 #[cfg(test)]
 mod there_and_back_again {
-    use super::{fourier_transform, inverse_fourier_transform, round_complex, INPULSE_AT_ONE, INPULSE_AT_ORIGIN};
+    use super::{
+        fourier_transform, inverse_fourier_transform, round_complex, INPULSE_AT_ONE,
+        INPULSE_AT_ORIGIN,
+    };
 
     #[test]
     fn inpulse_at_origin() {
@@ -195,8 +203,8 @@ mod ft_test {
     fn i64_and_i16_equal() {
         let input_i64: Vec<i64> = vec![0, 1, 0, 0, 0, 0, 0, 0];
         let input_i16: Vec<i16> = vec![0, 1, 0, 0, 0, 0, 0, 0];
-        let mut result_i64 = fourier_transform(input_i64);
-        let mut result_i16 = fourier_transform(input_i16);
+        let result_i64 = fourier_transform(input_i64);
+        let result_i16 = fourier_transform(input_i16);
         assert_eq!(result_i64, result_i16);
     }
 }

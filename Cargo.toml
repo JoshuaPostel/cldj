@@ -10,7 +10,7 @@ edition = "2018"
 tui = "0.9.5"
 termion = "1.5.5"
 num = "0.3"
-
+byteorder = "1.3"
 
 [dev-dependencies]
 criterion = "0.3"
