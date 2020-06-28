@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
 use std::str;
+use std::error::Error;
 
 #[derive(Debug)]
 pub struct RIFFHeader {
@@ -92,7 +93,7 @@ impl DataHeader {
     }
 }
 
-pub fn read_file(filename: &str) -> (RIFFHeader, FMTHeader, DataHeader, Vec<i16>) {
+pub fn read_file(filename: &str) -> Result<(RIFFHeader, FMTHeader, DataHeader, Vec<i16>), Box<dyn Error>> {
     //let mut f = File::open(file).unwrap();
     let mut f = File::open(filename).unwrap();
 
@@ -115,5 +116,5 @@ pub fn read_file(filename: &str) -> (RIFFHeader, FMTHeader, DataHeader, Vec<i16>
         .map(|x| i16::from_le_bytes([x[0], x[1]]))
         .collect();
 
-    (riff_h, fmt_h, data_h, signal)
+    Ok((riff_h, fmt_h, data_h, signal))
 }
