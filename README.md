@@ -16,3 +16,5 @@
   - [ ] add more filetypes
     - [ ] midi files
     - [ ] generalize commonalities
+
+- [ ] generate signals from period, amplitude, phase shift
