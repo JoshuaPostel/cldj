@@ -1,4 +1,3 @@
-pub mod input;
-pub mod output;
+pub mod io;
 pub mod display;
 pub mod transform;

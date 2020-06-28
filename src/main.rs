@@ -1,14 +1,20 @@
 use std::{error::Error};
 
-use cldj::input::wav;
+use cldj::io::wav::WAV;
 use cldj::display;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let (_, format_header, _, mut signal) = wav::read_file("data/100Hz_44100Hz_16bit_05sec.wav")?;
+    let mut wav = WAV::from_file("data/1kHz_44100Hz_16bit_05sec.wav")?;
+    wav.write("data/copy_1kHz.wav")?;
+
+
+    let mut wav = WAV::from_file("data/100Hz_44100Hz_16bit_05sec.wav")?;
+
+    //let (_, format_header, _, mut signal) = WAV::from_file("data/100Hz_44100Hz_16bit_05sec.wav")?;
     //let (_, format_header, _, mut signal) = wav::read_file("data/1kHz_44100Hz_16bit_05sec.wav");
 
-    let sample_rate = format_header.sample_rate as usize;
+    let sample_rate = wav.fmt_header.sample_rate as usize;
     let fourier_output_length = sample_rate / 10;
 //    println!("sample rate: {}", sample_rate);
 
@@ -19,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     //100 * 441 * 5 = 220500 samples
 //    println!("n samples: {}", signal.len());
 
-    let head = signal.drain(..fourier_output_length).collect::<Vec<i16>>();
+    let head = wav.signal.drain(..fourier_output_length).collect::<Vec<i16>>();
 //    let result = fourier_transform(head);
 //
 //    //2 ** 12 = 4096
@@ -41,8 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 //    for (i, x) in half.iter().enumerate() {
 //        println!("{}: {}", i, x);
 //    }
-    //display::run(foo)?;
-    display::run(head)?;
+    //display::run(head)?;
     Ok(())
 }
 
